@@ -32,7 +32,7 @@ export function usePeerEditingForm<FormShape = any>(
         console.log("posting");
         postData("/api/signal?slug=/", { data, type: "offer" });
       } else if (data.type == "answer") {
-        console.log("posting awnser");
+        console.log("posting answer");
         postData("/api/signal?slug=/", { data, type: "answer" });
       }
     });

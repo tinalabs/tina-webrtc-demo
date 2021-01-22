@@ -1,6 +1,5 @@
-import { useForm, usePlugin } from "tinacms";
+import { usePlugin } from "tinacms";
 import Layout from "../components/Layout";
-import { useEffect, useMemo, useState } from "react";
 import { usePeerEditingForm } from "../web-rtc-tina/hooks";
 
 type Fields = {
@@ -8,31 +7,29 @@ type Fields = {
   subtitle: string;
 };
 const IndexPage = () => {
-  const [modifiedValues, form, loading, connected] = usePeerEditingForm<Fields>(
-    {
-      id: "test",
-      label: "Home Page",
-      onSubmit: (data) => {
-        console.log(data);
+  const [modifiedValues, form, , connected] = usePeerEditingForm<Fields>({
+    id: "test",
+    label: "Home Page",
+    onSubmit: (data) => {
+      console.log(data);
+    },
+    initialValues: {
+      title: "Hello from tinacms",
+      subtitle: "This is a subtitle",
+    },
+    fields: [
+      {
+        component: "text",
+        name: "title",
+        label: "Title",
       },
-      initialValues: {
-        title: "Hello from tinacms",
-        subtitle: "This is a subtitle",
+      {
+        component: "text",
+        name: "subtitle",
+        label: "Subtitle",
       },
-      fields: [
-        {
-          component: "text",
-          name: "title",
-          label: "Title",
-        },
-        {
-          component: "text",
-          name: "subtitle",
-          label: "Subtitle",
-        },
-      ],
-    }
-  );
+    ],
+  });
 
   usePlugin(form);
   // const [inputVal, setInputVal] = useState("");
