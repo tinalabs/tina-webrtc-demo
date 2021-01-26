@@ -1,5 +1,6 @@
 import { usePlugin } from "tinacms";
 import Layout from "../components/Layout";
+import { Curser } from "../web-rtc-tina/curser/Cursor";
 import { usePeerEditingForm } from "../web-rtc-tina/hooks";
 
 type Fields = {
@@ -32,16 +33,10 @@ const IndexPage = () => {
   });
 
   usePlugin(form);
-  // const [inputVal, setInputVal] = useState("");
-
-  // this is bad
-  if (typeof window == "undefined") {
-    console.log("working");
-    return <div>loading...</div>;
-  }
 
   return (
     <Layout title="Home">
+      <Curser cursorXY={{ x: 1, y: 1 }} id="asdf" canMove={true} name={"me"} />
       <h1>{modifiedValues.title}</h1>
       <p>{modifiedValues.subtitle}</p>
       <div>{connected && "you are connected to a peer!"}</div>

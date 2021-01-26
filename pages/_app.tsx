@@ -1,4 +1,5 @@
 import { TinaCMS, TinaProvider } from "tinacms";
+import { PeerProvider } from "../web-rtc-tina/components";
 
 function MyApp({
   Component,
@@ -17,7 +18,9 @@ function MyApp({
         })
       }
     >
-      <Component {...pageProps} />;
+      <PeerProvider>
+        <Component {...pageProps} />
+      </PeerProvider>
     </TinaProvider>
   );
 }
