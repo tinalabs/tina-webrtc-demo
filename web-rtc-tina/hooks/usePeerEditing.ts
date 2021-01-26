@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
 import { Form, FormOptions, useForm } from "tinacms";
+import { usePeers } from "../components";
 import { postData } from "../util";
 
 export function usePeerEditingForm<FormShape = any>(
@@ -9,8 +10,9 @@ export function usePeerEditingForm<FormShape = any>(
   const [formState, setFormState] = useState(options.initialValues);
   const ssr = typeof window == "undefined";
   const secondPeer = ssr ? true : location.hash === "#1";
-  const [connected, setConnected] = useState(false);
+  // const [connected, setConnected] = useState(false);
   const connctedRef = useRef(false);
+  const { setPeer, connected, setConnected } = usePeers();
 
   const p = useMemo(() => {
     if (ssr) {
@@ -22,6 +24,8 @@ export function usePeerEditingForm<FormShape = any>(
     });
     return p;
   }, []);
+
+  setPeer(p);
 
   useEffect(() => {
     p.on("error", (err) => console.log("error", err));
@@ -44,7 +48,10 @@ export function usePeerEditingForm<FormShape = any>(
     });
 
     p.on("data", (data) => {
-      setFormState(JSON.parse(data));
+      const parsedData = JSON.parse(data);
+      if (parsedData.formChange) {
+        setFormState(parsedData.formChange);
+      }
     });
     const fetchOffer = async () => {
       if (secondPeer) {
@@ -76,7 +83,7 @@ export function usePeerEditingForm<FormShape = any>(
         // need to check if it can send data
         // This doesnt work with useState connected it only works with the ref (that why we need both)
         if (connctedRef.current) {
-          p.send(JSON.stringify(values.values));
+          p.send(JSON.stringify({ formChange: values.values }));
         }
       },
     },
