@@ -1,6 +1,5 @@
 import { usePlugin } from "tinacms";
 import Layout from "../components/Layout";
-import { Curser } from "../web-rtc-tina/curser/Cursor";
 import { usePeerEditingForm } from "../web-rtc-tina/hooks";
 import { useCurser } from "../web-rtc-tina/hooks/useCursers";
 

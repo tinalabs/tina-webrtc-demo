@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { usePeers } from "../components";
 
-export function useCurser<T = any>(): [] {
+export function useCurser(): [] {
   const { peer, _setPos, _setUsingPeerEditingCurser, connected } = usePeers();
 
   useEffect(() => {
