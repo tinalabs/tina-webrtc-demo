@@ -9,7 +9,9 @@ function MyApp({
   pageProps: any;
 }) {
   return (
-    <PeerProvider>
+    <PeerProvider
+    // config={{ toolbar: true }}
+    >
       <TinaProvider
         cms={
           new TinaCMS({

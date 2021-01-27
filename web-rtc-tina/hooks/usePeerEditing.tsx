@@ -1,17 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
-import { Form, FormOptions, useCMS, useForm } from "tinacms";
+import { Form, FormOptions, useCMS, useForm, Field, TextField } from "tinacms";
 import { usePeers } from "../components";
 import { postData } from "../util";
-
-export function usePeerEditingForm<FormShape = any>(
+import styled from "styled-components";
+const DisabledTextInput = styled.div`
+  input {
+    pointer-events: none !important;
+    background-color: var(--tina-color-grey-2) !important;
+    border-color: lightblue;
+    border-width: 2px;
+  }
+`;
+export function usePeerForm<FormShape = any>(
   options: FormOptions<FormShape>
 ): [FormShape, Form, boolean, boolean] {
+  console.log("rendering");
   const [formState, setFormState] = useState(options.initialValues);
+  const [peerFields, setPeerFields] = useState(options.fields);
   const cms = useCMS();
+
   const ssr = typeof window == "undefined";
   const secondPeer = ssr ? true : location.hash === "#1";
-  // const [connected, setConnected] = useState(false);
+
   const connctedRef = useRef(false);
   const { setPeer, connected, setConnected } = usePeers();
 
@@ -27,6 +38,45 @@ export function usePeerEditingForm<FormShape = any>(
   }, []);
 
   setPeer(p);
+  const unLockForms = () => {
+    console.log(options.fields);
+    console.log("unlocking");
+    setPeerFields(options.fields);
+  };
+  const lockField = useCallback(
+    (name: string) => {
+      const lockedTitleField = {
+        name: name,
+        component: (props) => (
+          <DisabledTextInput
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <TextField {...props} />
+          </DisabledTextInput>
+        ),
+      } as Field;
+      const newPeerFields = peerFields;
+      const fieldsIndex = newPeerFields?.findIndex(
+        (field) => field.name === name
+      );
+      if (
+        newPeerFields &&
+        typeof fieldsIndex === "number" &&
+        fieldsIndex !== -1
+      ) {
+        console.log(name);
+        if (newPeerFields[fieldsIndex].component === "text") {
+          newPeerFields[fieldsIndex] = lockedTitleField;
+          console.log({ newPeerFields });
+          setPeerFields([...newPeerFields]);
+        }
+      }
+    },
+    [peerFields]
+  );
 
   useEffect(() => {
     cms.events.subscribe("sidebar:*", (e) => {
@@ -64,7 +114,6 @@ export function usePeerEditingForm<FormShape = any>(
         postData("/api/signal?slug=/", { data, type: "answer" });
       }
     });
-
     p.on("connect", () => {
       console.log("CONNECT");
       connctedRef.current = true;
@@ -80,6 +129,12 @@ export function usePeerEditingForm<FormShape = any>(
         if (cms.sidebar) {
           cms.sidebar.isOpen = parsedData.sidebar.value;
         }
+      }
+      if (parsedData.formClicked) {
+        lockField(parsedData.formClicked);
+      }
+      if (parsedData.formUnClicked) {
+        unLockForms();
       }
     });
     const fetchOffer = async () => {
@@ -110,9 +165,21 @@ export function usePeerEditingForm<FormShape = any>(
     },
     {
       values: formState,
-      fields: options.fields,
+      fields: peerFields,
       label: options.label,
     }
+  );
+
+  form.subscribe(
+    ({ active }) => {
+      console.log({ active });
+      if (connctedRef.current && active) {
+        p.send(JSON.stringify({ formClicked: active }));
+      } else if (connctedRef.current) {
+        // p.send(JSON.stringify({ formUnClicked: true }));
+      }
+    },
+    { active: true }
   );
 
   return [modifiedValues, form, loading, connected];
