@@ -1,5 +1,7 @@
 import { usePlugin } from "tinacms";
 import Layout from "../components/Layout";
+import { ClickToConnectWidget } from "../web-rtc-tina/components/clickToConnectWidget";
+import { ConnectedWidget } from "../web-rtc-tina/components/connectionToolbarWidget";
 import { usePeerEditingForm } from "../web-rtc-tina/hooks";
 import { useCurser } from "../web-rtc-tina/hooks/useCursers";
 
@@ -33,6 +35,8 @@ const IndexPage = () => {
   });
 
   usePlugin(form);
+  usePlugin(ConnectedWidget);
+  usePlugin(ClickToConnectWidget);
   useCurser();
 
   return (

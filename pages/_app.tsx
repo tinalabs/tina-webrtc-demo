@@ -9,19 +9,19 @@ function MyApp({
   pageProps: any;
 }) {
   return (
-    <TinaProvider
-      cms={
-        new TinaCMS({
-          sidebar: true,
-          enabled: true,
-          toolbar: false,
-        })
-      }
-    >
-      <PeerProvider>
+    <PeerProvider>
+      <TinaProvider
+        cms={
+          new TinaCMS({
+            sidebar: true,
+            enabled: true,
+            toolbar: true,
+          })
+        }
+      >
         <Component {...pageProps} />
-      </PeerProvider>
-    </TinaProvider>
+      </TinaProvider>
+    </PeerProvider>
   );
 }
 
