@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
 import { Form, FormOptions, useCMS, useForm, Field, TextField } from "tinacms";
 import { usePeers } from "../components";
@@ -15,9 +15,10 @@ const DisabledTextInput = styled.div`
 export function usePeerForm<FormShape = any>(
   options: FormOptions<FormShape>
 ): [FormShape, Form, boolean, boolean] {
-  console.log("rendering");
   const [formState, setFormState] = useState(options.initialValues);
   const [peerFields, setPeerFields] = useState(options.fields);
+  const [disabledItems, setDisabledItems] = useState([] as string[]);
+  const [activeNme, setActiveName] = useState("");
   const cms = useCMS();
 
   const ssr = typeof window == "undefined";
@@ -41,10 +42,12 @@ export function usePeerForm<FormShape = any>(
   const unLockForms = () => {
     console.log(options.fields);
     console.log("unlocking");
+    setDisabledItems([]);
     setPeerFields(options.fields);
   };
-  const lockField = useCallback(
-    (name: string) => {
+  const lockField = (name: string) => {
+    if (!disabledItems.includes(name)) {
+      setDisabledItems([...disabledItems, name]);
       const lockedTitleField = {
         name: name,
         component: (props) => (
@@ -74,9 +77,8 @@ export function usePeerForm<FormShape = any>(
           setPeerFields([...newPeerFields]);
         }
       }
-    },
-    [peerFields]
-  );
+    }
+  };
 
   useEffect(() => {
     cms.events.subscribe("sidebar:*", (e) => {
@@ -172,14 +174,18 @@ export function usePeerForm<FormShape = any>(
 
   form.subscribe(
     ({ active }) => {
-      console.log({ active });
       if (connctedRef.current && active) {
+        if (!activeNme) {
+          setActiveName(active);
+        }
         p.send(JSON.stringify({ formClicked: active }));
-      } else if (connctedRef.current) {
-        // p.send(JSON.stringify({ formUnClicked: true }));
+      } else if (connctedRef.current && activeNme) {
+        console.log("sending unlock");
+        setActiveName("");
+        p.send(JSON.stringify({ formUnClicked: true }));
       }
     },
-    { active: true }
+    { active: true, modified: true }
   );
 
   return [modifiedValues, form, loading, connected];
