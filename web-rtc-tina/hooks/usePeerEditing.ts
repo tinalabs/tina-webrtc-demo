@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
-import { Form, FormOptions, useForm } from "tinacms";
+import { Form, FormOptions, useCMS, useForm } from "tinacms";
 import { usePeers } from "../components";
 import { postData } from "../util";
 
@@ -8,6 +8,7 @@ export function usePeerEditingForm<FormShape = any>(
   options: FormOptions<FormShape>
 ): [FormShape, Form, boolean, boolean] {
   const [formState, setFormState] = useState(options.initialValues);
+  const cms = useCMS();
   const ssr = typeof window == "undefined";
   const secondPeer = ssr ? true : location.hash === "#1";
   // const [connected, setConnected] = useState(false);
@@ -28,6 +29,29 @@ export function usePeerEditingForm<FormShape = any>(
   setPeer(p);
 
   useEffect(() => {
+    cms.events.subscribe("sidebar:*", (e) => {
+      if (!connctedRef.current) {
+        return;
+      }
+      if (e.type === "sidebar:opened") {
+        p.send(
+          JSON.stringify({
+            sidebar: {
+              value: true,
+            },
+          })
+        );
+      }
+      if (e.type === "sidebar:closed") {
+        p.send(
+          JSON.stringify({
+            sidebar: {
+              value: false,
+            },
+          })
+        );
+      }
+    });
     p.on("error", (err) => console.log("error", err));
 
     p.on("signal", (data) => {
@@ -52,6 +76,11 @@ export function usePeerEditingForm<FormShape = any>(
       if (parsedData.formChange) {
         setFormState(parsedData.formChange);
       }
+      if (parsedData.sidebar) {
+        if (cms.sidebar) {
+          cms.sidebar.isOpen = parsedData.sidebar.value;
+        }
+      }
     });
     const fetchOffer = async () => {
       if (secondPeer) {
@@ -60,14 +89,6 @@ export function usePeerEditingForm<FormShape = any>(
         if (offer) {
           p.signal(offer);
         }
-      } else {
-        setTimeout(async () => {
-          const res = await fetch("/api/signal?slug=/");
-          const { answer } = await res.json();
-          if (answer) {
-            p.signal(answer);
-          }
-        }, 10000);
       }
     };
     fetchOffer();

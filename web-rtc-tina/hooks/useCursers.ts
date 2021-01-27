@@ -6,8 +6,6 @@ export function useCurser(): [] {
 
   useEffect(() => {
     _setUsingPeerEditingCurser(true);
-    // if (!clientID || !canMove) return;
-    // only do this if they can move. EI this is there own curser
     const moveCursor = (e: MouseEvent) => {
       const x = e.clientX - 8;
       const y = e.clientY - 8;

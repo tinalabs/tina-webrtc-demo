@@ -20,7 +20,7 @@ export const Curser: React.FC<{
           borderRadius: "8px",
           backgroundColor: "lightblue",
           transform: `translate3d(${cursorXY.x}px, ${cursorXY.y}px, 0)`,
-          zIndex: 999,
+          zIndex: 4000,
           pointerEvents: "none",
         }}
       >

@@ -37,7 +37,9 @@ export const PeerProvider: React.FC<{ initialPeer?: Instance }> = ({
         setConnected,
       }}
     >
-      {_usingPeerEditingCurser && <Curser name="Smith" cursorXY={_pos} />}
+      {connected && _usingPeerEditingCurser && (
+        <Curser name="Smith" cursorXY={_pos} />
+      )}
       {children}
     </PeerContext.Provider>
   );
