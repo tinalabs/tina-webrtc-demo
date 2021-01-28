@@ -8,19 +8,14 @@ function MyApp({
   Component: React.FC<any>;
   pageProps: any;
 }) {
+  const cms = new TinaCMS({
+    sidebar: true,
+    enabled: true,
+    toolbar: true,
+  });
   return (
-    <PeerProvider
-    // config={{ toolbar: true }}
-    >
-      <TinaProvider
-        cms={
-          new TinaCMS({
-            sidebar: true,
-            enabled: true,
-            toolbar: true,
-          })
-        }
-      >
+    <PeerProvider cms={cms} config={{ shareSideBar: true }}>
+      <TinaProvider cms={cms}>
         <Component {...pageProps} />
       </TinaProvider>
     </PeerProvider>

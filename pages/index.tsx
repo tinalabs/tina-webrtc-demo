@@ -10,29 +10,32 @@ type Fields = {
   subtitle: string;
 };
 const IndexPage = () => {
-  const [modifiedValues, form, , connected] = usePeerForm<Fields>({
-    id: "test",
-    label: "Home Page",
-    onSubmit: (data) => {
-      console.log(data);
-    },
-    initialValues: {
-      title: "Hello from tinacms",
-      subtitle: "This is a subtitle",
-    },
-    fields: [
-      {
-        component: "text",
-        name: "title",
-        label: "Title",
+  const [modifiedValues, form, , connected] = usePeerForm<Fields>(
+    {
+      id: "test",
+      label: "Home Page",
+      onSubmit: (data) => {
+        console.log(data);
       },
-      {
-        component: "text",
-        name: "subtitle",
-        label: "Subtitle",
+      initialValues: {
+        title: "Hello from tinacms",
+        subtitle: "This is a subtitle",
       },
-    ],
-  });
+      fields: [
+        {
+          component: "text",
+          name: "title",
+          label: "Title",
+        },
+        {
+          component: "text",
+          name: "subtitle",
+          label: "Subtitle",
+        },
+      ],
+    },
+    { useLock: false }
+  );
 
   usePlugin(form);
   usePlugin(ConnectedWidget);

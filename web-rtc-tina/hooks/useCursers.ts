@@ -28,7 +28,7 @@ export function useCurser(): [] {
   }, [peer, connected]);
 
   useEffect(() => {
-    peer?.on("data", (data) => {
+    peer.on("data", (data) => {
       const parsedData = JSON.parse(data);
       if (parsedData.setPos) {
         _setPos(parsedData.setPos);

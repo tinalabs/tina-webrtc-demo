@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import SimplePeer from "simple-peer";
+import { useEffect, useState } from "react";
 import { Form, FormOptions, useCMS, useForm, Field, TextField } from "tinacms";
 import { usePeers } from "../components";
-import { postData } from "../util";
 import styled from "styled-components";
 const DisabledTextInput = styled.div`
   input {
@@ -13,7 +11,10 @@ const DisabledTextInput = styled.div`
   }
 `;
 export function usePeerForm<FormShape = any>(
-  options: FormOptions<FormShape>
+  options: FormOptions<FormShape>,
+  config: {
+    useLock: boolean;
+  }
 ): [FormShape, Form, boolean, boolean] {
   const [formState, setFormState] = useState(options.initialValues);
   const [peerFields, setPeerFields] = useState(options.fields);
@@ -21,24 +22,24 @@ export function usePeerForm<FormShape = any>(
   const [currentFieldEditing, setCurrentFieldEditing] = useState("");
   const cms = useCMS();
 
-  const ssr = typeof window == "undefined";
-  const secondPeer = ssr ? true : location.hash === "#1";
+  // const ssr = typeof window == "undefined";
+  // const secondPeer = ssr ? true : location.hash === "#1";
 
-  const connctedRef = useRef(false);
-  const { setPeer, connected, setConnected } = usePeers();
+  // const connctedRef = useRef(false);
+  const { peer: p, connected, connectedRef: connctedRef } = usePeers();
 
-  const p = useMemo(() => {
-    if (ssr) {
-      return (undefined as unknown) as SimplePeer.Instance;
-    }
-    const p = new SimplePeer({
-      initiator: !secondPeer,
-      trickle: false,
-    });
-    return p;
-  }, []);
+  // const p = useMemo(() => {
+  //   if (ssr) {
+  //     return (undefined as unknown) as SimplePeer.Instance;
+  //   }
+  //   const p = new SimplePeer({
+  //     initiator: !secondPeer,
+  //     trickle: false,
+  //   });
+  //   return p;
+  // }, []);
 
-  setPeer(p);
+  // setPeer(p);
   const unLockForms = () => {
     console.log(options.fields);
     console.log("unlocking");
@@ -81,46 +82,47 @@ export function usePeerForm<FormShape = any>(
   };
 
   useEffect(() => {
-    cms.events.subscribe("sidebar:*", (e) => {
-      if (!connctedRef.current) {
-        return;
-      }
-      if (e.type === "sidebar:opened") {
-        p.send(
-          JSON.stringify({
-            sidebar: {
-              value: true,
-            },
-          })
-        );
-      }
-      if (e.type === "sidebar:closed") {
-        p.send(
-          JSON.stringify({
-            sidebar: {
-              value: false,
-            },
-          })
-        );
-      }
-    });
-    p.on("error", (err) => console.log("error", err));
+    // cms.events.subscribe("sidebar:*", (e) => {
+    //   if (!connctedRef.current) {
+    //     return;
+    //   }
+    //   if (e.type === "sidebar:opened") {
+    //     p.send(
+    //       JSON.stringify({
+    //         sidebar: {
+    //           value: true,
+    //         },
+    //       })
+    //     );
+    //   }
+    //   if (e.type === "sidebar:closed") {
+    //     p.send(
+    //       JSON.stringify({
+    //         sidebar: {
+    //           value: false,
+    //         },
+    //       })
+    //     );
+    //   }
+    // });
 
-    p.on("signal", (data) => {
-      console.log("SIGNAL", JSON.stringify(data));
-      if (data.type === "offer") {
-        console.log("posting");
-        postData("/api/signal?slug=/", { data, type: "offer" });
-      } else if (data.type == "answer") {
-        console.log("posting answer");
-        postData("/api/signal?slug=/", { data, type: "answer" });
-      }
-    });
-    p.on("connect", () => {
-      console.log("CONNECT");
-      connctedRef.current = true;
-      setConnected(true);
-    });
+    // p.on("error", (err) => console.log("error", err));
+
+    // p.on("signal", (data) => {
+    //   console.log("SIGNAL", JSON.stringify(data));
+    //   if (data.type === "offer") {
+    //     console.log("posting");
+    //     postData("/api/signal?slug=/", { data, type: "offer" });
+    //   } else if (data.type == "answer") {
+    //     console.log("posting answer");
+    //     postData("/api/signal?slug=/", { data, type: "answer" });
+    //   }
+    // });
+    // p.on("connect", () => {
+    //   console.log("CONNECT");
+    //   connctedRef.current = true;
+    //   setConnected(true);
+    // });
 
     p.on("data", (data) => {
       const parsedData = JSON.parse(data);
@@ -139,17 +141,7 @@ export function usePeerForm<FormShape = any>(
         unLockForms();
       }
     });
-    const fetchOffer = async () => {
-      if (secondPeer) {
-        const res = await fetch("/api/signal?slug=/");
-        const { offer } = await res.json();
-        if (offer) {
-          p.signal(offer);
-        }
-      }
-    };
-    fetchOffer();
-  }, []);
+  }, [p]);
 
   const [modifiedValues, form, loading] = useForm<FormShape>(
     {
@@ -161,6 +153,7 @@ export function usePeerForm<FormShape = any>(
         // need to check if it can send data
         // This doesnt work with useState connected it only works with the ref (that why we need both)
         if (connctedRef.current) {
+          console.log();
           p.send(JSON.stringify({ formChange: values.values }));
         }
       },
@@ -174,6 +167,9 @@ export function usePeerForm<FormShape = any>(
 
   form.subscribe(
     ({ active }) => {
+      if (!config.useLock) {
+        return;
+      }
       if (connctedRef.current && active) {
         if (!currentFieldEditing) {
           console.log("setting active");
