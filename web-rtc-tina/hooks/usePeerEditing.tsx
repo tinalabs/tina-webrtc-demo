@@ -18,7 +18,7 @@ export function usePeerForm<FormShape = any>(
   const [formState, setFormState] = useState(options.initialValues);
   const [peerFields, setPeerFields] = useState(options.fields);
   const [disabledItems, setDisabledItems] = useState([] as string[]);
-  const [activeNme, setActiveName] = useState("");
+  const [currentFieldEditing, setCurrentFieldEditing] = useState("");
   const cms = useCMS();
 
   const ssr = typeof window == "undefined";
@@ -175,14 +175,18 @@ export function usePeerForm<FormShape = any>(
   form.subscribe(
     ({ active }) => {
       if (connctedRef.current && active) {
-        if (!activeNme) {
-          setActiveName(active);
+        if (!currentFieldEditing) {
+          console.log("setting active");
+          console.log(active);
+          setCurrentFieldEditing(active);
+          p.send(JSON.stringify({ formClicked: active }));
         }
-        p.send(JSON.stringify({ formClicked: active }));
-      } else if (connctedRef.current && activeNme) {
-        console.log("sending unlock");
-        setActiveName("");
-        p.send(JSON.stringify({ formUnClicked: true }));
+      } else if (connctedRef.current && currentFieldEditing) {
+        if (currentFieldEditing) {
+          console.log("sending unlock");
+          setCurrentFieldEditing("");
+          p.send(JSON.stringify({ formUnClicked: true }));
+        }
       }
     },
     { active: true, modified: true }
