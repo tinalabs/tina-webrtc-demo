@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import SimplePeer from "simple-peer";
+import { useEffect, useState } from "react";
 import { Form, FormOptions, useCMS, useForm, Field, TextField } from "tinacms";
 import { usePeers } from "../components";
-import { postData } from "../util";
 import styled from "styled-components";
 const DisabledTextInput = styled.div`
   input {
