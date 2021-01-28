@@ -153,7 +153,6 @@ export function usePeerForm<FormShape = any>(
         // need to check if it can send data
         // This doesnt work with useState connected it only works with the ref (that why we need both)
         if (connctedRef.current) {
-          console.log();
           p.send(JSON.stringify({ formChange: values.values }));
         }
       },
@@ -185,7 +184,7 @@ export function usePeerForm<FormShape = any>(
         }
       }
     },
-    { active: true, modified: true }
+    { active: true }
   );
 
   return [modifiedValues, form, loading, connected];
