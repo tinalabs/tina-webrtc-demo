@@ -1,6 +1,5 @@
 import { usePlugin } from "tinacms";
 import Layout from "../components/Layout";
-import { usePeers } from "../web-rtc-tina/components";
 import { ClickToConnectWidget } from "../web-rtc-tina/components/clickToConnectWidget";
 import { ConnectedWidget } from "../web-rtc-tina/components/connectionToolbarWidget";
 import { usePeerForm } from "../web-rtc-tina/hooks";
